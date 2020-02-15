@@ -13,12 +13,12 @@
       </div>
       <div class="results" v-if="isFetched">
         <div class="info">
-          <div class="location">{{ results.name }}, {{ results.sys.country }}</div>
-          <div class="date">{{ date() }}</div>
+          <div class="location">{{ results.location }}</div>
+          <div class="date">{{ useDate() }}</div>
         </div>
         <div class="weather">
-          <div class="temperature">{{ Math.round(results.main.temp) }}°C</div>
-          <div class="state">{{ results.weather[0].main }}</div>
+          <div class="temperature">{{ Math.round(results.temperature) }}°C</div>
+          <div class="description">{{ results.description }}</div>
         </div>
       </div>
     </main>
@@ -26,64 +26,57 @@
 </template>
 
 <script>
-// import { ref } from '@vue/composition-api';
+import { ref, reactive, computed, onBeforeMount } from '@vue/composition-api';
+import { useDate } from './assets/useDate';
 
 export default {
   name: 'App',
-  // setup() {
-  //   return {};
-  // }
-  data() {
-    return {
-      baseUrl: 'https://api.openweathermap.org/data/2.5/',
-      query: '',
-      results: {}
+  setup() {
+    const query = ref('');
+    const results = reactive({
+      location: null,
+      temperature: null,
+      description: null
+    });
+
+    const fetchWeather = async () => {
+      try {
+        const response = await fetch(
+          `https://api.openweathermap.org/data/2.5/weather?q=${query.value}&units=metric&lang=ru&APPID=${process.env.VUE_APP_API_KEY}`
+        );
+
+        const {
+          name,
+          main: { temp },
+          weather
+        } = await response.json();
+
+        results.location = name;
+        results.temperature = temp;
+        results.description = weather[0].description;
+
+        query.value = '';
+      } catch (e) {
+        console.log(e);
+      }
     };
-  },
-  methods: {
-    async fetchWeather() {
-      const response = await fetch(
-        `${this.baseUrl}weather?q=${this.query}&units=metric&APPID=${process.env.VUE_APP_API_KEY}`
-      );
-      const data = await response.json();
-      this.setResults(data);
-    },
-    setResults(data) {
-      this.results = data;
-    },
-    date() {
-      const d = new Date();
-      const months = [
-        'Января',
-        'Февраля',
-        'Марта',
-        'Апреля',
-        'Мая',
-        'Июня',
-        'Июля',
-        'Августа',
-        'Сентября',
-        'Октября',
-        'Ноября',
-        'Декабря'
-      ];
-      const days = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
 
-      const day = days[d.getDay()];
-      const date = d.getDate();
-      const month = months[d.getMonth()];
-      const year = d.getFullYear();
+    const isFetched = computed(() => Boolean(results.temperature));
+    const isWarm = computed(() => (results.temperature > 16 ? 'warm' : ''));
 
-      return `${day} ${date} ${month} ${year}`;
-    }
-  },
-  computed: {
-    isFetched() {
-      return this.results.main;
-    },
-    isWarm() {
-      return this.results.main.temp > 16 ? 'warm' : '';
-    }
+    onBeforeMount(() => {
+      query.value = 'Москва';
+      fetchWeather();
+    });
+
+    return {
+      query,
+      results,
+      fetchWeather,
+      isFetched,
+      isWarm,
+      useDate
+    };
   }
 };
 </script>
@@ -100,7 +93,7 @@ body {
 }
 
 #app {
-  background-image: url('./assets/cold-bg.jpg');
+  background-image: url('./assets/images/cold-bg.jpg');
   background-size: cover;
   background-position: bottom;
   transition: 0.4s;
@@ -109,7 +102,7 @@ body {
   margin: 0 auto;
 
   &.warm {
-    background-image: url('./assets/warm-bg.jpg');
+    background-image: url('./assets/images/warm-bg.jpg');
   }
 }
 
@@ -184,10 +177,11 @@ main {
       border-radius: 16px;
     }
 
-    .state {
-      font-size: 3rem;
+    .description {
+      font-size: 2.5rem;
       font-weight: 700;
       font-style: italic;
+      word-wrap: break-word;
     }
   }
 }
