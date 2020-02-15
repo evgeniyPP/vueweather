@@ -93,16 +93,12 @@ body {
 }
 
 #app {
-  background-image: url('./assets/images/cold-bg.jpg');
+  background-image: url('./assets/images/cold-bg.png');
   background-size: cover;
-  background-position: bottom;
   transition: 0.4s;
 
-  max-width: 400px;
-  margin: 0 auto;
-
   &.warm {
-    background-image: url('./assets/images/warm-bg.jpg');
+    background-image: url('./assets/images/warm-bg.png');
   }
 }
 
