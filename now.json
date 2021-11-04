@@ -1,7 +1,0 @@
-{
-    "build": {
-      "env": {
-        "VUE_APP_API_KEY": "@api-key"
-      }
-    }
-  }

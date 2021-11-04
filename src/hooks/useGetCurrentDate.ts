@@ -1,4 +1,4 @@
-export function useDate() {
+function useGetCurrentDate(): string {
   const d = new Date();
   const months = [
     'Января',
@@ -23,3 +23,5 @@ export function useDate() {
 
   return `${day} ${date} ${month} ${year}`;
 }
+
+export default useGetCurrentDate;

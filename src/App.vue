@@ -3,21 +3,20 @@
     <main>
       <div class="search-box">
         <input
+          v-model.lazy="query"
+          v-debounce="700"
           type="text"
-          name=""
-          id=""
           placeholder="Поиск..."
-          v-model="query"
-          @blur="fetchWeather"
+          @change="fetchWeather()"
         />
       </div>
-      <div class="results" v-if="isFetched">
+      <div v-if="isFetched" class="results">
         <div class="info">
           <div class="location">{{ results.location }}</div>
-          <div class="date">{{ useDate() }}</div>
+          <div class="date">{{ currentDate }}</div>
         </div>
         <div class="weather">
-          <div class="temperature">{{ Math.round(results.temperature) }}°C</div>
+          <div class="temperature">{{ results.temperature }}°C</div>
           <div class="description">{{ results.description }}</div>
         </div>
       </div>
@@ -25,60 +24,15 @@
   </div>
 </template>
 
-<script>
-import { ref, reactive, computed, onBeforeMount } from '@vue/composition-api';
-import { useDate } from './assets/useDate';
+<script setup lang="ts">
+import { onBeforeMount } from 'vue';
+import useSearch from './hooks/useSearch';
+import useGetCurrentDate from './hooks/useGetCurrentDate';
 
-export default {
-  name: 'App',
-  setup() {
-    const query = ref('');
-    const results = reactive({
-      location: null,
-      temperature: null,
-      description: null
-    });
+const { query, results, fetchWeather, isFetched, isWarm } = useSearch();
+const currentDate = useGetCurrentDate();
 
-    const fetchWeather = async () => {
-      try {
-        const response = await fetch(
-          `https://api.openweathermap.org/data/2.5/weather?q=${query.value}&units=metric&lang=ru&APPID=${process.env.VUE_APP_API_KEY}`
-        );
-
-        const {
-          name,
-          main: { temp },
-          weather
-        } = await response.json();
-
-        results.location = name;
-        results.temperature = temp;
-        results.description = weather[0].description;
-
-        query.value = '';
-      } catch (e) {
-        console.log(e);
-      }
-    };
-
-    const isFetched = computed(() => Boolean(results.temperature));
-    const isWarm = computed(() => (results.temperature > 16 ? 'warm' : ''));
-
-    onBeforeMount(() => {
-      query.value = 'Москва';
-      fetchWeather();
-    });
-
-    return {
-      query,
-      results,
-      fetchWeather,
-      isFetched,
-      isWarm,
-      useDate
-    };
-  }
-};
+onBeforeMount(() => fetchWeather('Москва'));
 </script>
 
 <style lang="less">
