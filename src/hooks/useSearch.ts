@@ -34,15 +34,13 @@ function useSearch() {
     }
   };
 
-  const isFetched = computed(() => Boolean(results.temperature));
-  const isWarm = computed(() => (results.temperature && results.temperature > 16 ? 'warm' : ''));
+  const isFetched = computed(() => !!results.temperature);
 
   return {
     query,
     results,
     fetchWeather,
-    isFetched,
-    isWarm
+    isFetched
   };
 }
 

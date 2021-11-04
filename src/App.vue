@@ -1,6 +1,18 @@
+<script setup lang="ts">
+import { computed, onBeforeMount } from 'vue';
+import useSearch from './hooks/useSearch';
+import useGetCurrentDate from './hooks/useGetCurrentDate';
+
+const { query, results, fetchWeather, isFetched } = useSearch();
+const isWarm = computed(() => isFetched.value && results.temperature && results.temperature > 16);
+const currentDate = useGetCurrentDate();
+
+onBeforeMount(() => fetchWeather('Москва'));
+</script>
+
 <template>
-  <div id="app" :class="isFetched && isWarm">
-    <main>
+  <main :class="{ warm: isWarm }">
+    <div class="wrapper">
       <div class="search-box">
         <input
           v-model.lazy="query"
@@ -20,20 +32,9 @@
           <div class="description">{{ results.description }}</div>
         </div>
       </div>
-    </main>
-  </div>
+    </div>
+  </main>
 </template>
-
-<script setup lang="ts">
-import { onBeforeMount } from 'vue';
-import useSearch from './hooks/useSearch';
-import useGetCurrentDate from './hooks/useGetCurrentDate';
-
-const { query, results, fetchWeather, isFetched, isWarm } = useSearch();
-const currentDate = useGetCurrentDate();
-
-onBeforeMount(() => fetchWeather('Москва'));
-</script>
 
 <style lang="less">
 * {
@@ -46,7 +47,7 @@ body {
   font-family: 'Montserrat', Helvetica, Arial, sans-serif;
 }
 
-#app {
+main {
   background-image: url('./assets/images/cold-bg.png');
   background-size: cover;
   transition: 0.4s;
@@ -56,7 +57,7 @@ body {
   }
 }
 
-main {
+.wrapper {
   min-height: 100vh;
   padding: 25px;
   background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0.75));
