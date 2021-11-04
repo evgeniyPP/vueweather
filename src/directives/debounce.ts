@@ -1,5 +1,5 @@
 const debouncer = (fn: any, delay: number, ...rest: any) => {
-  let timeoutID: NodeJS.Timeout;
+  let timeoutID: any;
 
   return () => {
     clearTimeout(timeoutID);
